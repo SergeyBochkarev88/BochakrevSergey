@@ -1,0 +1,217 @@
+openapi: 3.0.0
+info:
+  title: API Интернет-библиотека
+  description: Интернет-библиотека
+  contact:
+    email: bochkareffsv@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/BOCHKAREFFSV_1/library_1.0/1.0.0
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: user
+  description: Пользователь
+paths:
+  /book:
+    get:
+      tags:
+      - user
+      summary: фильтрация книг в библиотеке по жанру
+      description: Параметры фильтрации книг в библиотеке для поиска
+      operationId: searchBook
+      parameters:
+      - name: genre
+        in: query
+        description: поиск книг по жанру
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: результаты фильтрации по запросу
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "400":
+          description: не верные параметры фильтрации
+    post:
+      tags:
+      - user
+      summary: добавить книгу
+      description: Добавить новую книгу в библиотеку
+      operationId: addBook
+      requestBody:
+        description: Новая книга для добавления в библиотеку
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/book'
+      responses:
+        "201":
+          description: книга добавлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+        "400":
+          description: некорректный ввод
+        "409":
+          description: такая книга уже есть
+  /book/{id}:
+    get:
+      tags:
+      - user
+      summary: Получение списка всех книг с деталями
+      description: Просмотр данных о книге по ее ID
+      operationId: viewBook
+      parameters:
+      - name: id
+        in: path
+        description: ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+          example: 1
+      responses:
+        "200":
+          description: Книга найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/book'
+        "404":
+          description: Книга не найдена
+    put:
+      tags:
+      - user
+      summary: Изменить книгу
+      description: Изменение параметров книги
+      operationId: updateBook
+      parameters:
+      - name: id
+        in: path
+        description: "ID книги, параметры которой нужно изменить"
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          example: 1
+      requestBody:
+        description: Измененные параметры книги
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/book'
+      responses:
+        "200":
+          description: параметры книги изменены успешно
+        "400":
+          description: некорректный ввод
+        "404":
+          description: книга не найдена
+    delete:
+      tags:
+      - user
+      summary: Удалить книгу
+      description: Удаление книги по его идентификатору
+      operationId: deleteBook
+      parameters:
+      - name: id
+        in: path
+        description: Идентификатор книги для удаления
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+        example: 1
+      responses:
+        "200":
+          description: книга успешно удалена
+        "404":
+          description: книгка не найдена
+        "500":
+          description: внутренняя ошибка сервера
+components:
+  schemas:
+    book:
+      required:
+      - data
+      - genre
+      - id
+      - id_author
+      - name_book
+      - paging
+      - yearPublic
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name_book:
+          type: string
+          example: Три товарища
+        genre:
+          type: string
+          example: роман
+        yearPublic:
+          type: string
+          format: date
+          example: 2016-08-29
+        id_author:
+          $ref: '#/components/schemas/author'
+    author:
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Ремарк Э.М.
+    pagination:
+      required:
+      - pageIndex
+      - recordsPerPage
+      type: object
+      properties:
+        pageIndex:
+          type: integer
+          example: 1
+        recordsPerPage:
+          type: integer
+          example: 5
+        totalRecords:
+          type: integer
+          example: 5000
+      description: объект пагинации
+    inline_response_200:
+      type: object
+      properties:
+        book:
+          type: array
+          description: массив книг
+          items:
+            $ref: '#/components/schemas/book'
+        pagination:
+          $ref: '#/components/schemas/pagination'
+    inline_response_201:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        book:
+          $ref: '#/components/schemas/book'
